@@ -9,8 +9,8 @@ namespace Sincro.Domain.Entities
     public class Produto
     {
         public int Id { get; set; }
-        public string Codigo { get; set; }
-        public string Nome { get; set; }
+        public string Codigo { get; set; } = string.Empty;
+        public string Nome { get; set; } = string.Empty;
         public decimal PrecoBase { get; set; }
     }
 }

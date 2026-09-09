@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Configuração local (connection string e chave JWT reais) — nunca sobe pro Git
+appsettings.Development.json

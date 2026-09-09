@@ -19,5 +19,20 @@ namespace Sincro.Infrastructure.Data
         public DbSet<Pedido> Pedidos => Set<Pedido>();
         public DbSet<Etapa> Etapas => Set<Etapa>();
         public DbSet<EventoPedido> EventoPedidos => Set<EventoPedido>();
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<Cliente>().HasIndex(c => c.Codigo).IsUnique();
+            builder.Entity<Cliente>().HasIndex(c => c.TokenAcompanhamento).IsUnique();
+            builder.Entity<Produto>().Property(p => p.PrecoBase).HasPrecision(10, 2);
+            builder.Entity<Etapa>().HasIndex(e => e.Chave).IsUnique();
+            builder.Entity<Pedido>()
+                .HasOne(p => p.Cliente)
+                .WithMany(c => c.Pedidos)
+                .HasForeignKey(p => p.ClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
     }
 }
