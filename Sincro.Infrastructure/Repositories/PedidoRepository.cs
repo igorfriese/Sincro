@@ -43,5 +43,12 @@ namespace Sincro.Infrastructure.Repositories
         {
             _context.Pedidos.Remove(pedido);
         }
+
+        public async Task<List<Pedido>> ListarPorClienteIdAsync(int clienteId)
+        {
+            return await _context.Pedidos
+                .Where(p => p.ClienteId == clienteId)
+                .ToListAsync();
+        }
     }
 }

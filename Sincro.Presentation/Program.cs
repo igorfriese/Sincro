@@ -69,6 +69,7 @@ builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<IEtapaRepository, EtapaRepository>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
+builder.Services.AddScoped<IEventoPedidoRepository, EventoPedidoRepository>();
 
 // ---------- Serviços da Application ----------
 builder.Services.AddScoped<TokenService>();
