@@ -9,10 +9,7 @@ namespace Sincro.Domain.Interfaces
 {
     public interface IEventoPedidoRepository
     {
-        public interface IEventoPedidoRepository
-        {
-            Task<List<EventoPedido>> ListarPorPedidoIdAsync(int pedidoId);
-            Task AdicionarAsync(EventoPedido evento);
-        }
+        Task<List<EventoPedido>> ListarPorPedidoIdAsync(int pedidoId);
+        Task AdicionarAsync(EventoPedido evento);
     }
 }
