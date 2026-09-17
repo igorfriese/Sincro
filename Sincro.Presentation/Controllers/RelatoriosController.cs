@@ -45,5 +45,36 @@ namespace Sincro.Presentation.Controllers
             }
             return Ok(pedidosNoPeriodo);
         }
+
+        [HttpGet("pontualidade")]
+        public async Task<IActionResult> Pontualidade()
+        {
+            var etapas = await _etapaRepository.ListarTodosAsync();
+            var etapaFinal = etapas.OrderByDescending(e => e.Ordem).First();
+
+            var pedidos = await _pedidoRepository.ListarTodosAsync();
+            var pedidosFinalizados = pedidos.Where(p => p.Coluna == etapaFinal.Chave).ToList();
+
+            int pontuais = 0;
+            int atrasados = 0;
+
+            foreach (var pedido in pedidosFinalizados)
+            {
+                var eventos = await _eventoRepository.ListarPorPedidoIdAsync(pedido.Id);
+                var eventoConclusao = eventos.FirstOrDefault(e => e.Etapa == etapaFinal.Chave);
+
+                if (eventoConclusao is null) continue;
+
+                if (eventoConclusao.DataHora > pedido.Prazo)
+                {
+                    atrasados++;
+                }
+                else
+                {
+                    pontuais++;
+                }
+            }
+            return Ok(new {pontuais, atrasados});
+        }
     }
 }
