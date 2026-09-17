@@ -21,11 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="DTOs\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Sincro.Application\Sincro.Application.csproj" />
     <ProjectReference Include="..\Sincro.Infrastructure\Sincro.Infrastructure.csproj" />
   </ItemGroup>
