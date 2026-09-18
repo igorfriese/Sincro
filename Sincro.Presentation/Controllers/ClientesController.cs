@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sincro.Domain.Interfaces;
-using Sincro.Presentation.Dtos;
+using Sincro.Presentation.DTOs;
 
 namespace Sincro.Presentation.Controllers
 {

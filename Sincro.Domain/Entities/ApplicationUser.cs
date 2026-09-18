@@ -10,5 +10,6 @@ namespace Sincro.Domain.Entities
     public class ApplicationUser : IdentityUser
     {
         public string Nome { get; set; } = string.Empty;
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     }
 }
