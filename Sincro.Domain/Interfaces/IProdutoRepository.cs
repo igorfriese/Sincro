@@ -14,5 +14,6 @@ namespace Sincro.Domain.Interfaces
         Task AdicionarAsync(Produto produto);
         void Atualizar(Produto produto);
         void Remover(Produto produto);
+        Task SalvarAsync();
     }
 }
