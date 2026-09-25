@@ -39,8 +39,8 @@ builder.Services
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
+            ValidateIssuer = false,
+            ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtConfig["Issuer"],
@@ -110,8 +110,16 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    await DbSeeder.SeedAsync(scope.ServiceProvider);
+    var services = scope.ServiceProvider;
+    var db = services.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate(); // cria o banco/aplica migrations pendentes, se necessário
+    await DbSeeder.SeedAsync(services);
 }
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    await DbSeeder.SeedAsync(scope.ServiceProvider);
+//}
 
 if (app.Environment.IsDevelopment())
 {
