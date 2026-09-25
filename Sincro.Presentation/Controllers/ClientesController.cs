@@ -51,7 +51,7 @@ namespace Sincro.Presentation.Controllers
                 if (cliente is null)
                     return NotFound(new ErroDto("Cliente não encontrado"));
 
-                return Ok(new ClienteDetailDto(cliente.Id, cliente.Nome, cliente.Email ?? "", cliente.Telefone ?? "", "", cliente.Documento ?? "", true, DateTime.UtcNow));
+                return Ok(new ClienteDetailDto(cliente.Id, cliente.Nome, cliente.Email ?? "", cliente.Telefone ?? "", cliente.Endereco ?? "", cliente.Documento ?? "", true, DateTime.UtcNow));
             }
             catch (Exception ex)
             {
@@ -74,6 +74,7 @@ namespace Sincro.Presentation.Controllers
                     Nome = dto.Nome,
                     Email = dto.Email,
                     Telefone = dto.Telefone,
+                    Endereco = dto.Endereco,
                     Documento = dto.CNPJ,
                     TokenAcompanhamento = Guid.NewGuid().ToString()
                 };

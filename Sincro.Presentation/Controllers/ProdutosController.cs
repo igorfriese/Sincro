@@ -36,7 +36,7 @@ namespace Sincro.Presentation.Controllers
                         p.Id,
                         p.Nome,
                         p.PrecoBase,
-                        0, // Estoque não está na entidade — adicionar se necessário
+                        p.Estoque,
                         true // Ativo
                     ))
                     .ToList();
@@ -70,9 +70,9 @@ namespace Sincro.Presentation.Controllers
                 return Ok(new ProdutoDetailDto(
                     produto.Id,
                     produto.Nome,
-                    "", // Descrição — adicionar ao banco se necessário
+                    produto.Descricao ?? "",
                     produto.PrecoBase,
-                    0, // Estoque — adicionar ao banco se necessário
+                    produto.Estoque,
                     true, // Ativo
                     DateTime.UtcNow
                 ));
@@ -99,7 +99,9 @@ namespace Sincro.Presentation.Controllers
                 {
                     Codigo = Guid.NewGuid().ToString()[..8],
                     Nome = dto.Nome,
-                    PrecoBase = dto.Preco
+                    Descricao = dto.Descricao,
+                    PrecoBase = dto.Preco,
+                    Estoque = dto.Estoque
                 };
 
                 await _repository.AdicionarAsync(novoProduto);
@@ -137,7 +139,10 @@ namespace Sincro.Presentation.Controllers
 
                 // Atualizar campos
                 produto.Nome = dto.Nome;
+                produto.Descricao = dto.Descricao;
                 produto.PrecoBase = dto.Preco;
+                produto.Estoque = dto.Estoque;
+
                 // Descrição e Estoque — atualizar se adicionados à entidade
 
                 _repository.Atualizar(produto);
