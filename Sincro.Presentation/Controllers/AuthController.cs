@@ -37,9 +37,33 @@ namespace Sincro.Presentation.Controllers
 
             var roles = await _userManager.GetRolesAsync(usuario);
             var token = _tokenService.GerarToken(usuario, roles);
+            var refreshToken = _tokenService.GerarRefreshToken();
+
+            usuario.RefreshToken = refreshToken;
+            usuario.RefreshTokenExpiraEm = DateTime.UtcNow.AddDays(7);
+            await _userManager.UpdateAsync(usuario);
 
             var usuarioDto = new UsuarioDto(usuario.Id, usuario.Nome, usuario.Email!, roles.FirstOrDefault() ?? "");
-            return Ok(new LoginResponseDto(token, usuarioDto));
+            return Ok(new LoginResponseDto(token, refreshToken, usuarioDto));
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken(RefreshTokenRequestDto dto)
+        {
+            var usuario = _userManager.Users.FirstOrDefault(u => u.RefreshToken == dto.RefreshToken);
+            if (usuario is null || usuario.RefreshTokenExpiraEm < DateTime.UtcNow)
+                return Unauthorized(new ErroDto("Refresh token inválido ou expirado"));
+
+            var roles = await _userManager.GetRolesAsync(usuario);
+            var novoToken = _tokenService.GerarToken(usuario, roles);
+            var novoRefreshToken = _tokenService.GerarRefreshToken();
+
+            usuario.RefreshToken = novoRefreshToken;
+            usuario.RefreshTokenExpiraEm = DateTime.UtcNow.AddDays(7);
+            await _userManager.UpdateAsync(usuario);
+
+            var usuarioDto = new UsuarioDto(usuario.Id, usuario.Nome, usuario.Email!, roles.FirstOrDefault() ?? "");
+            return Ok(new LoginResponseDto(novoToken, novoRefreshToken, usuarioDto));
         }
     }
 }

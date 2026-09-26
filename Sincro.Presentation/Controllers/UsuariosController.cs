@@ -222,6 +222,38 @@ namespace Sincro.Presentation.Controllers
         }
 
         /// <summary>
+        /// Atualizar dados do próprio perfil (usuário logado)
+        /// </summary>
+        [HttpPut("me")]
+        public async Task<IActionResult> AtualizarMeuPerfil([FromBody] AtualizarMeuPerfilDto dto)
+        {
+            try
+            {
+                var usuarioId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(usuarioId))
+                    return Unauthorized();
+
+                var usuario = await _userManager.FindByIdAsync(usuarioId);
+                if (usuario == null)
+                    return NotFound();
+
+                usuario.Nome = dto.Nome;
+                usuario.PhoneNumber = dto.Telefone;
+
+                var resultado = await _userManager.UpdateAsync(usuario);
+                if (!resultado.Succeeded)
+                    return BadRequest(new ErroDto(string.Join(", ", resultado.Errors.Select(e => e.Description))));
+
+                return Ok(new { mensagem = "Perfil atualizado com sucesso" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ErroDto($"Erro: {ex.Message}"));
+            }
+        }
+
+
+        /// <summary>
         /// Alterar senha do usuário logado
         /// </summary>
         [HttpPut("me/senha")]

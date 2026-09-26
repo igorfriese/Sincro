@@ -105,6 +105,7 @@ namespace Sincro.Presentation.Controllers
                 };
 
                 await _repository.AdicionarAsync(novoProduto);
+                await _repository.SalvarAsync();
 
                 return CreatedAtAction(nameof(ObterProduto), new { id = novoProduto.Id },
                     new ProdutoListaDto(
@@ -146,6 +147,7 @@ namespace Sincro.Presentation.Controllers
                 // Descrição e Estoque — atualizar se adicionados à entidade
 
                 _repository.Atualizar(produto);
+                await _repository.SalvarAsync();
 
                 return Ok(new { mensagem = "Produto atualizado com sucesso" });
             }
@@ -169,6 +171,7 @@ namespace Sincro.Presentation.Controllers
                     return NotFound(new ErroDto("Produto não encontrado"));
 
                 _repository.Remover(produto);
+                await _repository.SalvarAsync();
 
                 return Ok(new { mensagem = "Produto deletado com sucesso" });
             }
