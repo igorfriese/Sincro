@@ -21,7 +21,10 @@ namespace Sincro.Infrastructure.Repositories
 
         public async Task<List<Pedido>> ListarTodosAsync()
         {
-            return await _context.Pedidos.ToListAsync();
+            return await _context.Pedidos
+                .Include(p => p.Cliente)
+                .Include(p => p.Produto)
+                .ToListAsync();
         }
 
         public async Task<Pedido?> ObterPorIdAsync(int id)
