@@ -29,7 +29,10 @@ namespace Sincro.Infrastructure.Repositories
 
         public async Task<Pedido?> ObterPorIdAsync(int id)
         {
-            return await _context.Pedidos.FindAsync(id);
+            return await _context.Pedidos
+                .Include(p => p.Cliente)
+                .Include(p => p.Produto)
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task AdicionarAsync(Pedido pedido)
