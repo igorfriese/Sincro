@@ -11,7 +11,7 @@ namespace Sincro.Domain
         public const string Administrador = "Administrador";
         public const string Gestor = "Gestor";
         public const string Vendedor = "Vendedor";
-
+        public const string AdministradorOuGestor = Administrador + "," + Gestor;
         public static readonly string[] Todas = { Administrador, Gestor, Vendedor };
     }
 }

@@ -8,6 +8,8 @@ using Sincro.Domain.Interfaces;
 using Sincro.Infrastructure.Data;
 using Sincro.Infrastructure.Repositories;
 using System.Text;
+using Sincro.Application.Interfaces;
+using Sincro.Presentation.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,6 +74,10 @@ builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 
 // ---------- Serviços da Application ----------
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
+builder.Services.AddScoped<IProdutoService, ProdutoService>();
 
 // ---------- Controllers + Swagger ----------
 builder.Services.AddControllers();
@@ -107,6 +113,8 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddSignalR();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {
