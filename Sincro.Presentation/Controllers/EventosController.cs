@@ -51,6 +51,48 @@ namespace Sincro.Presentation.Controllers
             return Ok(evento);
         }
 
+        // =========================================================
+        // 1. EVENTOS PÚBLICOS DO CLIENTE
+        // =========================================================
+
+        [HttpGet("publico/cliente/{token}/pedido/{pedidoId}")]
+        [AllowAnonymous]
+        public async Task<ActionResult> ListarEventosPublicos(string token, int pedidoId)
+        {
+            var cliente = await _context.Clientes
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.TokenAcompanhamento == token);
+        
+            if (cliente == null)
+            {
+                return NotFound(new { mensagem = "Link inválido ou cliente não encontrado." });
+            }
+
+            var pedidoPertenceAoCliente = await _context.Pedidos
+                .AsNoTracking()
+                .AnyAsync(p => p.Id == pedidoId && p.ClienteId == cliente.Id);
+
+            if (!pedidoPertenceAoCliente)
+            {
+                return NotFound(new { mensagem = "Pedido não encontrado para este cliente." });
+            }
+
+            var eventos = await _context.EventoPedidos
+                .AsNoTracking()
+                .Where(e => e.PedidoId == pedidoId)
+                .OrderBy(e => e.DataHora)
+                .Select(e => new
+                {
+                    id = e.Id,
+                    etapa = e.Etapa,
+                    dataHota = e.DataHora,
+                    observacao = e.Observacao,
+                })
+                .ToListAsync();
+
+            return Ok(eventos);
+        }
+
         [HttpPost]
         [Authorize(Roles = "Administrador,Gestor,Vendedor")]
         public async Task<ActionResult<EventoPedido>> Criar(EventoPedido evento)
