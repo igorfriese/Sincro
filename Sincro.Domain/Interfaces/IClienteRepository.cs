@@ -14,6 +14,6 @@ namespace Sincro.Domain.Interfaces
         Task AdicionarAsync(Cliente cliente);
         void Atualizar(Cliente cliente);
         void Remover(Cliente cliente);
-
+        Task SalvarAsync();
     }
 }

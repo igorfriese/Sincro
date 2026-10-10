@@ -43,5 +43,11 @@ namespace Sincro.Application.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        public string GerarRefreshToken()
+        {
+            var bytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(64);
+            return Convert.ToBase64String(bytes);
+        }
     }
 }

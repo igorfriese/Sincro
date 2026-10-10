@@ -5,6 +5,7 @@ using Sincro.Domain.Entities;
 using Sincro.Domain.Interfaces;
 using Sincro.Application.Services;
 using Sincro.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Sincro.Presentation.Controllers
 {
@@ -116,6 +117,50 @@ namespace Sincro.Presentation.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("publico/cliente/{token}")]
+        [AllowAnonymous]
+        public async Task<ActionResult> AcompanharClientePublico(string token)
+        {
+            var cliente = await _context.Clientes
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.TokenAcompanhamento == token);
+
+            if (cliente == null)
+            {
+                return NotFound(new
+                {
+                    mensagem = "Link inválido ou cliente não encontrado."
+                });
+            }
+
+            var pedidos = await _context.Pedidos
+                .AsNoTracking()
+                .Where(p => p.ClienteId == cliente.Id)
+                .Include(p => p.Produto)
+                .Select(p => new
+                {
+                    id = p.Id,
+                    modelo = p.Produto != null ? p.Produto.Nome : $"Produto #{p.ProdutoId}",
+                    qtd = p.Quantidade,
+                    prazo = p.Prazo,
+                    urgente = p.Urgente,
+                    coluna = p.Coluna
+                })
+                .OrderBy(p => p.prazo)
+                .ToListAsync();
+
+                return Ok(new
+                {
+                    cliente = new
+                    {
+                        id = cliente.Id,
+                        nome = cliente.Nome
+                    },
+                    pedidos
+                });
+            }
+
 
         [HttpPut("{id}/etapa")]
         [Authorize(Roles = "Administrador,Gestor,Vendedor")]
