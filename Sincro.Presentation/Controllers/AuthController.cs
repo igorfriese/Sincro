@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Sincro.Application.Services;
-using Sincro.Domain.Entities;
-using Sincro.Presentation.Dtos;
+using Sincro.Application.DTOs;
+using Sincro.Application.Interfaces;
 
 namespace Sincro.Presentation.Controllers
 {
@@ -10,36 +8,19 @@ namespace Sincro.Presentation.Controllers
     [Route("api/auth")]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly TokenService _tokenService;
+        private readonly IAuthService _authService;
 
-        public AuthController(
-            UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager,
-            TokenService tokenService)
+        public AuthController(IAuthService authService)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _tokenService = tokenService;
+            _authService = authService;
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequestDto dto)
-        {
-            var usuario = await _userManager.FindByEmailAsync(dto.Email);
-            if (usuario is null)
-                return Unauthorized(new ErroDto("Credenciais inválidas"));
+            => Ok(await _authService.LoginAsync(dto));
 
-            var resultado = await _signInManager.CheckPasswordSignInAsync(usuario, dto.Senha, lockoutOnFailure: false);
-            if (!resultado.Succeeded)
-                return Unauthorized(new ErroDto("Credenciais inválidas"));
-
-            var roles = await _userManager.GetRolesAsync(usuario);
-            var token = _tokenService.GerarToken(usuario, roles);
-
-            var usuarioDto = new UsuarioDto(usuario.Id, usuario.Nome, usuario.Email!, roles.FirstOrDefault() ?? "");
-            return Ok(new LoginResponseDto(token, usuarioDto));
-        }
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken(RefreshTokenRequestDto dto)
+            => Ok(await _authService.RenovarTokenAsync(dto));
     }
 }

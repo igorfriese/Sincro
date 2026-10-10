@@ -85,7 +85,7 @@ namespace Sincro.Presentation.Controllers
                 {
                     id = e.Id,
                     etapa = e.Etapa,
-                    dataHota = e.DataHora,
+                    dataHora = e.DataHora,
                     observacao = e.Observacao,
                 })
                 .ToListAsync();

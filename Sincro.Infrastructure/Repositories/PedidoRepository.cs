@@ -49,5 +49,9 @@ namespace Sincro.Infrastructure.Repositories
         {
             _context.Pedidos.Remove(pedido);
         }
+        public async Task SalvarAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 }

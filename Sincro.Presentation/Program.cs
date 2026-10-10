@@ -9,6 +9,8 @@ using Sincro.Infrastructure.Data;
 using Sincro.Infrastructure.Repositories;
 using System.Text.Json.Serialization;
 using System.Text;
+using Sincro.Application.Interfaces;
+using Sincro.Presentation.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,8 +42,8 @@ builder.Services
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
+            ValidateIssuer = false,
+            ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtConfig["Issuer"],
@@ -75,6 +77,10 @@ builder.Services.AddScoped<EtapaService>();
 
 // ---------- Serviços da Application ----------
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
+builder.Services.AddScoped<IProdutoService, ProdutoService>();
 
 // ---------- Controllers + Swagger ----------
 builder.Services
@@ -117,10 +123,20 @@ builder.Services.AddSignalR();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 using (var scope = app.Services.CreateScope())
 {
-    await DbSeeder.SeedAsync(scope.ServiceProvider);
+    var services = scope.ServiceProvider;
+    var db = services.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate(); // cria o banco/aplica migrations pendentes, se necessário
+    await DbSeeder.SeedAsync(services);
 }
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    await DbSeeder.SeedAsync(scope.ServiceProvider);
+//}
 
 if (app.Environment.IsDevelopment())
 {
