@@ -7,6 +7,7 @@ using Sincro.Domain.Entities;
 using Sincro.Domain.Interfaces;
 using Sincro.Infrastructure.Data;
 using Sincro.Infrastructure.Repositories;
+using System.Text.Json.Serialization;
 using System.Text;
 using Sincro.Application.Interfaces;
 using Sincro.Presentation.Middleware;
@@ -106,6 +107,8 @@ builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<IEtapaRepository, EtapaRepository>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<EtapaService>();
 
 // ---------- Serviços da Application ----------
 builder.Services.AddScoped<TokenService>();
@@ -115,7 +118,13 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
 
 // ---------- Controllers + Swagger ----------
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
