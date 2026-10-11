@@ -23,10 +23,19 @@ namespace Sincro.Application.Services
             var usuario = await _userManager.FindByEmailAsync(dto.Email);
 
             // Mesma mensagem em todos os casos para não revelar se o email existe
-            if (usuario is null
-                || await _userManager.IsLockedOutAsync(usuario)
-                || !await _userManager.CheckPasswordAsync(usuario, dto.Senha))
+            if (usuario is null)
                 throw new NaoAutorizadoException("Credenciais inválidas");
+
+            if (await _userManager.IsLockedOutAsync(usuario))
+                throw new NaoAutorizadoException("Credenciais inválidas");
+
+            if (!await _userManager.CheckPasswordAsync(usuario, dto.Senha))
+            {
+                await _userManager.AccessFailedAsync(usuario); // conta a falha; bloqueia ao atingir o limite
+                throw new NaoAutorizadoException("Credenciais inválidas");
+            }
+
+            await _userManager.ResetAccessFailedCountAsync(usuario);
 
             return await GerarRespostaAsync(usuario);
         }
@@ -35,7 +44,10 @@ namespace Sincro.Application.Services
         {
             var usuario = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == dto.RefreshToken);
 
-            if (usuario is null || usuario.RefreshTokenExpiraEm is null || usuario.RefreshTokenExpiraEm < DateTime.UtcNow)
+            if (usuario is null
+                || usuario.RefreshTokenExpiraEm is null
+                || usuario.RefreshTokenExpiraEm < DateTime.UtcNow
+                || await _userManager.IsLockedOutAsync(usuario))
                 throw new NaoAutorizadoException("Refresh token inválido ou expirado");
 
             return await GerarRespostaAsync(usuario);

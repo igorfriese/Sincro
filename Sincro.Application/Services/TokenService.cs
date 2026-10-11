@@ -31,7 +31,7 @@ namespace Sincro.Application.Services
             };
             claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
 
-            var horasExpiracao = double.Parse(jwtConfig["ExpiraEmHoras"] ?? "8");
+            var horasExpiracao = double.Parse(jwtConfig["ExpiraEmHoras"] ?? "1", System.Globalization.CultureInfo.InvariantCulture);
 
             var token = new JwtSecurityToken(
                 issuer: jwtConfig["Issuer"],
