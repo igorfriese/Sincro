@@ -24,13 +24,27 @@ builder.Services
     {
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequiredLength = 6;
+
+        // Bloqueio por tentativas de login erradas
+        options.Lockout.AllowedForNewUsers = true;
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
 // ---------- Autenticação JWT ----------
 var jwtConfig = builder.Configuration.GetSection("Jwt");
-var jwtKey = jwtConfig["Key"] ?? throw new InvalidOperationException("Jwt:Key não configurada em appsettings.json");
+
+var jwtKey = jwtConfig["Key"];
+if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32)
+    throw new InvalidOperationException(
+        "Jwt:Key ausente ou curta demais (mínimo 32 caracteres). Configure com 'dotnet user-secrets set \"Jwt:Key\" \"...\"' ou pela variável de ambiente Jwt__Key.");
+
+var jwtIssuer = jwtConfig["Issuer"]
+    ?? throw new InvalidOperationException("Jwt:Issuer não configurado");
+var jwtAudience = jwtConfig["Audience"]
+    ?? throw new InvalidOperationException("Jwt:Audience não configurado");
 
 builder.Services
     .AddAuthentication(options =>
@@ -42,13 +56,34 @@ builder.Services
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+
             ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(1),
+
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtConfig["Issuer"],
-            ValidAudience = jwtConfig["Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 },
+        };
+
+        // SignalR (WebSocket) não envia o header Authorization:
+        // o cliente manda o token em ?access_token=... e aqui ele é aceito só para /hubs
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                    context.Token = accessToken;
+
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -133,11 +168,6 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedAsync(services);
 }
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    await DbSeeder.SeedAsync(scope.ServiceProvider);
-//}
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -153,6 +183,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// app.MapHub<PedidosHub>("/hubs/pedidos"); 
+// app.MapHub<PedidosHub>("/hubs/pedidos");  // Pessoa 3: o hub deve ter [Authorize]
 
 app.Run();
