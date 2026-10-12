@@ -14,6 +14,7 @@ namespace Sincro.Domain.Entities
         public string? Documento { get; set; }
         public string? Telefone { get; set; }
         public string? Email { get; set; }
+        public string? Endereco { get; set; }
         public string TokenAcompanhamento { get; set; } = string.Empty;
 
         public ICollection<Pedido> Pedidos { get; set; } = new List<Pedido>();

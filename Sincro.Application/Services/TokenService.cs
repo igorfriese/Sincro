@@ -31,7 +31,7 @@ namespace Sincro.Application.Services
             };
             claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
 
-            var horasExpiracao = double.Parse(jwtConfig["ExpiraEmHoras"] ?? "8");
+            var horasExpiracao = double.Parse(jwtConfig["ExpiraEmHoras"] ?? "1", System.Globalization.CultureInfo.InvariantCulture);
 
             var token = new JwtSecurityToken(
                 issuer: jwtConfig["Issuer"],
@@ -42,6 +42,12 @@ namespace Sincro.Application.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public string GerarRefreshToken()
+        {
+            var bytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(64);
+            return Convert.ToBase64String(bytes);
         }
     }
 }

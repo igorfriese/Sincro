@@ -21,12 +21,18 @@ namespace Sincro.Infrastructure.Repositories
 
         public async Task<List<Pedido>> ListarTodosAsync()
         {
-            return await _context.Pedidos.ToListAsync();
+            return await _context.Pedidos
+                .Include(p => p.Cliente)
+                .Include(p => p.Produto)
+                .ToListAsync();
         }
 
         public async Task<Pedido?> ObterPorIdAsync(int id)
         {
-            return await _context.Pedidos.FindAsync(id);
+            return await _context.Pedidos
+                .Include(p => p.Cliente)
+                .Include(p => p.Produto)
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task AdicionarAsync(Pedido pedido)
@@ -42,6 +48,10 @@ namespace Sincro.Infrastructure.Repositories
         public void Remover(Pedido pedido)
         {
             _context.Pedidos.Remove(pedido);
+        }
+        public async Task SalvarAsync()
+        {
+            await _context.SaveChangesAsync();
         }
 
         public async Task<List<Pedido>> ListarPorClienteIdAsync(int clienteId)
