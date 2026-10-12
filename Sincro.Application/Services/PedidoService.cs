@@ -41,13 +41,15 @@ namespace Sincro.Application.Services
                 ? await _pedidoRepository.ListarPorResponsavelAsync(usuario.Id)
                 : await _pedidoRepository.ListarTodosAsync();
 
-            return pedidos.OrderBy(p => p.Prazo).Select(ParaDto).ToList();
+            var ultimas = await _eventoRepository.UltimaMovimentacaoPorPedidoAsync(pedidos.Select(p => p.Id));
+
+            return pedidos.OrderBy(p => p.Prazo).Select(p => ParaDto(p, ultimas)).ToList();
         }
 
         public async Task<PedidoDto> ObterAsync(int id, UsuarioAtual usuario)
         {
             var pedido = await ObterComPermissaoAsync(id, usuario);
-            return ParaDto(pedido);
+            return await ParaDtoAsync(pedido);
         }
 
         public async Task<PedidoDto> CriarAsync(CriarPedidoDto dto, UsuarioAtual usuario)
@@ -97,7 +99,7 @@ namespace Sincro.Application.Services
             await _unitOfWork.SalvarAsync();
 
             // Recarrega com cliente e produto para devolver o mesmo formato da listagem
-            return ParaDto((await _pedidoRepository.ObterPorIdAsync(pedido.Id))!);
+            return await ParaDtoAsync((await _pedidoRepository.ObterPorIdAsync(pedido.Id))!);
         }
 
         public async Task AtualizarAsync(int id, AtualizarPedidoDto dto, UsuarioAtual usuario)
@@ -233,7 +235,10 @@ namespace Sincro.Application.Services
             return etapas;
         }
 
-        private static PedidoDto ParaDto(Pedido p)
+        private async Task<PedidoDto> ParaDtoAsync(Pedido p)
+            => ParaDto(p, await _eventoRepository.UltimaMovimentacaoPorPedidoAsync(new[] { p.Id }));
+
+        private static PedidoDto ParaDto(Pedido p, Dictionary<int, DateTime> ultimasMovimentacoes)
             => new(
                 p.Id,
                 p.ClienteId,
@@ -244,6 +249,7 @@ namespace Sincro.Application.Services
                 p.Quantidade,
                 p.Prazo,
                 p.Urgente,
-                p.Coluna);
+                p.Coluna,
+                ultimasMovimentacoes.TryGetValue(p.Id, out var ultima) ? ultima : null);
     }
 }

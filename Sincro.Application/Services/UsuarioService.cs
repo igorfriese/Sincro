@@ -5,16 +5,19 @@ using Sincro.Application.Exceptions;
 using Sincro.Application.Interfaces;
 using Sincro.Domain;
 using Sincro.Domain.Entities;
+using Sincro.Domain.Interfaces;
 
 namespace Sincro.Application.Services
 {
     public class UsuarioService : IUsuarioService
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IPedidoRepository _pedidoRepository;
 
-        public UsuarioService(UserManager<ApplicationUser> userManager)
+        public UsuarioService(UserManager<ApplicationUser> userManager, IPedidoRepository pedidoRepository)
         {
             _userManager = userManager;
+            _pedidoRepository = pedidoRepository;
         }
 
         public async Task<ListaUsuariosDto> ListarAsync(int pagina, int tamanho)
@@ -145,6 +148,12 @@ namespace Sincro.Application.Services
 
             if (await _userManager.IsInRoleAsync(usuario, Roles.Administrador) && await EhUltimoAdministradorAsync())
                 throw new RegraDeNegocioException("Não é possível excluir o último Administrador do sistema");
+
+            // Sem isso os pedidos ficariam com um responsável que não existe (e sumiriam para os vendedores)
+            var qtdPedidos = await _pedidoRepository.ContarPorResponsavelAsync(usuario.Id);
+            if (qtdPedidos > 0)
+                throw new RegraDeNegocioException(
+                    $"{qtdPedidos} pedido(s) estão sob responsabilidade de {usuario.Nome}. Troque o responsável antes de excluir.");
 
             var resultado = await _userManager.DeleteAsync(usuario);
             if (!resultado.Succeeded)
