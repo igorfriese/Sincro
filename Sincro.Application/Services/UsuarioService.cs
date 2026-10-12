@@ -40,6 +40,20 @@ namespace Sincro.Application.Services
             return new ListaUsuariosDto(total, dtos);
         }
 
+        public async Task<List<ResponsavelDto>> ListarResponsaveisAsync()
+        {
+            var usuarios = await _userManager.Users.OrderBy(u => u.Nome).ToListAsync();
+
+            var responsaveis = new List<ResponsavelDto>();
+            foreach (var usuario in usuarios)
+            {
+                var roles = await _userManager.GetRolesAsync(usuario);
+                responsaveis.Add(new ResponsavelDto(usuario.Id, usuario.Nome, roles.FirstOrDefault() ?? "Sem papel"));
+            }
+
+            return responsaveis;
+        }
+
         public async Task<UsuarioListaDto> ObterAsync(string id, string? usuarioLogadoId, bool usuarioLogadoEhAdmin)
         {
             // Apenas Admin ou o próprio usuário pode ver os dados

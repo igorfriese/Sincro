@@ -27,6 +27,12 @@ namespace Sincro.Presentation.Controllers
         public async Task<IActionResult> ListarUsuarios([FromQuery] int pagina = 1, [FromQuery] int tamanho = 10)
             => Ok(await _usuarioService.ListarAsync(pagina, tamanho));
 
+        /// <summary>Usuários que podem ser responsáveis por um pedido (Admin ou Gestor)</summary>
+        [HttpGet("responsaveis")]
+        [Authorize(Roles = Roles.AdministradorOuGestor)]
+        public async Task<IActionResult> ListarResponsaveis()
+            => Ok(await _usuarioService.ListarResponsaveisAsync());
+
         /// <summary>Obter detalhes de um usuário (apenas Admin ou o próprio usuário)</summary>
         [HttpGet("{id}")]
         public async Task<IActionResult> ObterUsuario(string id)

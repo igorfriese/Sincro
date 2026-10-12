@@ -11,6 +11,7 @@ namespace Sincro.Application.Interfaces
     public interface IUsuarioService
     {
         Task<ListaUsuariosDto> ListarAsync(int pagina, int tamanho);
+        Task<List<ResponsavelDto>> ListarResponsaveisAsync();
         Task<UsuarioListaDto> ObterAsync(string id, string? usuarioLogadoId, bool usuarioLogadoEhAdmin);
         Task<UsuarioListaDto> CriarAsync(CriarUsuarioDto dto);
         Task AtualizarAsync(string id, AtualizarUsuarioDto dto);
