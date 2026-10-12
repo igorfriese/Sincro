@@ -49,10 +49,6 @@ namespace Sincro.Infrastructure.Repositories
         {
             _context.Pedidos.Remove(pedido);
         }
-        public async Task SalvarAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
 
         public async Task<List<Pedido>> ListarPorResponsavelAsync(string responsavelId)
         {

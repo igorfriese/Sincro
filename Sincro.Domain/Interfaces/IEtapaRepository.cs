@@ -14,6 +14,5 @@ namespace Sincro.Domain.Interfaces
         Task AdicionarAsync(Etapa etapa);
         void Atualizar(Etapa etapa);
         void Remover(Etapa etapa);
-        Task SalvarAsync();
     }
 }

@@ -14,7 +14,6 @@ namespace Sincro.Domain.Interfaces
         Task AdicionarAsync(Pedido pedido);
         void Atualizar(Pedido pedido);
         void Remover(Pedido pedido);
-        Task SalvarAsync();
         Task<List<Pedido>> ListarPorResponsavelAsync(string responsavelId);
         Task<List<Pedido>> ListarPorClienteIdAsync(int clienteId);
         Task<int> ContarPorColunaAsync(string chaveEtapa);
