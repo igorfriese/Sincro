@@ -19,10 +19,17 @@ namespace Sincro.Infrastructure.Repositories
             _context = context;
         }
 
+        public async Task<EventoPedido?> ObterPorIdAsync(int id)
+        {
+            return await _context.EventoPedidos.FindAsync(id);
+        }
+
         public async Task<List<EventoPedido>> ListarPorPedidoIdAsync(int pedidoId)
         {
             return await _context.EventoPedidos
+                .AsNoTracking()
                 .Where(e => e.PedidoId == pedidoId)
+                .OrderBy(e => e.DataHora)
                 .ToListAsync();
         }
 
