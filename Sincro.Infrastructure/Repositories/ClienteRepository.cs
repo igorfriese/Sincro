@@ -29,6 +29,14 @@ namespace Sincro.Infrastructure.Repositories
             return await _context.Clientes.FindAsync(id);
         }
 
+        // Busca direta pelo índice único (sem carregar a tabela inteira)
+        public async Task<Cliente?> ObterPorTokenAsync(string tokenAcompanhamento)
+        {
+            return await _context.Clientes
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.TokenAcompanhamento == tokenAcompanhamento);
+        }
+
         public async Task AdicionarAsync(Cliente cliente)
         {
             await _context.Clientes.AddAsync(cliente);

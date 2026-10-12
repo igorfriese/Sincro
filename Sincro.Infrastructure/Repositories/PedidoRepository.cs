@@ -53,5 +53,23 @@ namespace Sincro.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<Pedido>> ListarPorResponsavelAsync(string responsavelId)
+        {
+            return await _context.Pedidos
+                .Include(p => p.Cliente)
+                .Include(p => p.Produto)
+                .Where(p => p.ResponsavelId == responsavelId)
+                .ToListAsync();
+        }
+
+        public async Task<List<Pedido>> ListarPorClienteIdAsync(int clienteId)
+        {
+            return await _context.Pedidos
+                .AsNoTracking()
+                .Include(p => p.Produto)
+                .Where(p => p.ClienteId == clienteId)
+                .ToListAsync();
+        }
     }
 }

@@ -11,6 +11,7 @@ namespace Sincro.Domain.Interfaces
     {
         Task<List<Cliente>> ListarTodosAsync();
         Task<Cliente?> ObterPorIdAsync(int id);
+        Task<Cliente?> ObterPorTokenAsync(string tokenAcompanhamento);
         Task AdicionarAsync(Cliente cliente);
         void Atualizar(Cliente cliente);
         void Remover(Cliente cliente);
