@@ -168,6 +168,10 @@ using (var scope = app.Services.CreateScope())
     var db = services.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate(); // cria o banco/aplica migrations pendentes, se necessário
     await DbSeeder.SeedAsync(services);
+
+    // Clientes, produtos, pedidos e usuários de exemplo — só em desenvolvimento e com o banco vazio
+    if (app.Environment.IsDevelopment())
+        await DemoSeeder.SeedAsync(services);
 }
 
 if (app.Environment.IsDevelopment())
