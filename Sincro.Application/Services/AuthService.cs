@@ -22,17 +22,22 @@ namespace Sincro.Application.Services
         {
             var usuario = await _userManager.FindByEmailAsync(dto.Email);
 
-            // Mesma mensagem em todos os casos para não revelar se o email existe
+            // Mesma mensagem para email inexistente e senha errada (não revela se o email existe)
+            const string mensagemInvalido = "E-mail ou senha incorretos.";
+            const string mensagemBloqueado = "Muitas tentativas erradas. Aguarde 15 minutos e tente de novo.";
+
             if (usuario is null)
-                throw new NaoAutorizadoException("Credenciais inválidas");
+                throw new NaoAutorizadoException(mensagemInvalido);
 
             if (await _userManager.IsLockedOutAsync(usuario))
-                throw new NaoAutorizadoException("Credenciais inválidas");
+                throw new NaoAutorizadoException(mensagemBloqueado);
 
             if (!await _userManager.CheckPasswordAsync(usuario, dto.Senha))
             {
                 await _userManager.AccessFailedAsync(usuario); // conta a falha; bloqueia ao atingir o limite
-                throw new NaoAutorizadoException("Credenciais inválidas");
+                throw new NaoAutorizadoException(await _userManager.IsLockedOutAsync(usuario)
+                    ? mensagemBloqueado
+                    : mensagemInvalido);
             }
 
             await _userManager.ResetAccessFailedCountAsync(usuario);
