@@ -25,6 +25,16 @@ namespace Sincro.Infrastructure.Repositories
                 .Where(e => e.PedidoId == pedidoId)
                 .ToListAsync();
         }
+
+        // Uma consulta só para todos os pedidos (evita N+1 nos relatórios)
+        public async Task<List<EventoPedido>> ListarPorEtapaAsync(string chaveEtapa)
+        {
+            return await _context.EventoPedidos
+                .AsNoTracking()
+                .Where(e => e.Etapa == chaveEtapa)
+                .ToListAsync();
+        }
+
         public async Task AdicionarAsync(EventoPedido evento)
         {
             await _context.EventoPedidos.AddAsync(evento);

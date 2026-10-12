@@ -1,80 +1,35 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Sincro.Domain.Entities;
-using Sincro.Domain.Interfaces;
-using Sincro.Presentation.Dtos;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Sincro.Application.DTOs;
+using Sincro.Application.Interfaces;
+using Sincro.Domain;
 
 namespace Sincro.Presentation.Controllers
 {
     [ApiController]
     [Route("api/relatorios")]
+    [Authorize(Roles = Roles.AdministradorOuGestor)]
     public class RelatoriosController : ControllerBase
     {
-        private readonly IPedidoRepository _pedidoRepository;
-        private readonly IEventoPedidoRepository _eventoRepository;
-        private readonly IEtapaRepository _etapaRepository;
+        private readonly IRelatorioService _relatorioService;
 
-        public RelatoriosController(IPedidoRepository pedidoRepository, IEventoPedidoRepository eventoRepository, IEtapaRepository etapaRepository)
+        public RelatoriosController(IRelatorioService relatorioService)
         {
-            _pedidoRepository = pedidoRepository;
-            _eventoRepository = eventoRepository;
-            _etapaRepository = etapaRepository;
+            _relatorioService = relatorioService;
         }
 
+        // GET /api/relatorios/producao?dataInicio=2026-10-01&dataFim=2026-10-31 (datas opcionais)
         [HttpGet("producao")]
-        public async Task<IActionResult> Producao(DateTime dataInicio, DateTime dataFim)
+        public async Task<ActionResult<ProducaoDto>> Producao([FromQuery] DateTime? dataInicio, [FromQuery] DateTime? dataFim)
         {
-            var etapas = await _etapaRepository.ListarTodosAsync();
-            var etapaFinal = etapas.OrderByDescending(e => e.Ordem).First();
-
-            var pedidos = await _pedidoRepository.ListarTodosAsync();
-            var pedidosFinalizados = pedidos.Where(p => p.Coluna == etapaFinal.Chave).ToList();
-
-            var pedidosNoPeriodo = new List<Pedido>();
-
-            foreach (var pedido in pedidosFinalizados)
-            {
-                var eventos = await _eventoRepository.ListarPorPedidoIdAsync(pedido.Id);
-                var eventoConclusao = eventos.FirstOrDefault(e => e.Etapa == etapaFinal.Chave);
-
-                if (eventoConclusao is null) continue;
-
-                if (eventoConclusao.DataHora >= dataInicio && eventoConclusao.DataHora <= dataFim)
-                {
-                    pedidosNoPeriodo.Add(pedido);
-                }
-            }
-            return Ok(pedidosNoPeriodo);
+            return Ok(await _relatorioService.ProducaoAsync(dataInicio, dataFim));
         }
 
+        // GET /api/relatorios/pontualidade?dataInicio=2026-10-01&dataFim=2026-10-31
         [HttpGet("pontualidade")]
-        public async Task<IActionResult> Pontualidade()
+        public async Task<ActionResult<PontualidadeDto>> Pontualidade([FromQuery] DateTime? dataInicio, [FromQuery] DateTime? dataFim)
         {
-            var etapas = await _etapaRepository.ListarTodosAsync();
-            var etapaFinal = etapas.OrderByDescending(e => e.Ordem).First();
-
-            var pedidos = await _pedidoRepository.ListarTodosAsync();
-            var pedidosFinalizados = pedidos.Where(p => p.Coluna == etapaFinal.Chave).ToList();
-
-            int pontuais = 0;
-            int atrasados = 0;
-
-            foreach (var pedido in pedidosFinalizados)
-            {
-                var eventos = await _eventoRepository.ListarPorPedidoIdAsync(pedido.Id);
-                var eventoConclusao = eventos.FirstOrDefault(e => e.Etapa == etapaFinal.Chave);
-
-                if (eventoConclusao is null) continue;
-
-                if (eventoConclusao.DataHora > pedido.Prazo)
-                {
-                    atrasados++;
-                }
-                else
-                {
-                    pontuais++;
-                }
-            }
-            return Ok(new {pontuais, atrasados});
+            return Ok(await _relatorioService.PontualidadeAsync(dataInicio, dataFim));
         }
     }
 }
