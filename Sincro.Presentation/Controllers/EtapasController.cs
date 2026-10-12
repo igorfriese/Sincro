@@ -18,8 +18,10 @@ namespace Sincro.Presentation.Controllers
             _etapaService = etapaService;
         }
 
-        // Ler as colunas: qualquer usuário logado (o Kanban precisa delas)
+        // Lista pública: o portal do cliente (sem login) também desenha as etapas.
+        // Só nome, cor e ordem das colunas — nada sensível.
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<List<EtapaDto>>> ListarTodos()
             => Ok(await _etapaService.ListarAsync());
 
