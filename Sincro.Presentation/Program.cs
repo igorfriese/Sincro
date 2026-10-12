@@ -7,6 +7,7 @@ using Sincro.Application.Services;
 using Sincro.Domain.Entities;
 using Sincro.Domain.Interfaces;
 using Sincro.Infrastructure.Data;
+using Sincro.Infrastructure.Identity;
 using Sincro.Infrastructure.Repositories;
 using System.Text.Json.Serialization;
 using System.Text;
@@ -33,7 +34,8 @@ builder.Services
         options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddErrorDescriber<IdentityErrosPtBr>();
 
 // ---------- Autenticação JWT ----------
 var jwtConfig = builder.Configuration.GetSection("Jwt");

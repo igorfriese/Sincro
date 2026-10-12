@@ -33,15 +33,31 @@ namespace Sincro.Application.DTOs
         [Required(ErrorMessage = "Role é obrigatório")]
         string Role);
 
-    public record AtualizarUsuarioDto([Required(ErrorMessage = "Nome é obrigatório")] string Nome);
+    // Administrador editando outro usuário: NovaSenha vazia mantém a senha atual
+    public record AtualizarUsuarioDto(
+        [Required(ErrorMessage = "Nome é obrigatório")]
+        string Nome,
+
+        [Required(ErrorMessage = "Email é obrigatório")]
+        [EmailAddress(ErrorMessage = "Email inválido")]
+        string Email,
+
+        [Required(ErrorMessage = "Perfil é obrigatório")]
+        string Role,
+
+        [MinLength(6, ErrorMessage = "Senha deve ter no mínimo 6 caracteres")]
+        string? NovaSenha);
 
     public record AtualizarMeuPerfilDto(
         [Required(ErrorMessage = "Nome é obrigatório")] string Nome,
+        [Required(ErrorMessage = "Email é obrigatório")]
+        [EmailAddress(ErrorMessage = "Email inválido")] string Email,
         string? Telefone);
 
     public record AlterarSenhaDto(
-        [Required] string SenhaAnterior,
-        [Required][MinLength(6)] string NovaSenha);
+        [Required(ErrorMessage = "Informe a senha atual")] string SenhaAnterior,
+        [Required(ErrorMessage = "Informe a nova senha")]
+        [MinLength(6, ErrorMessage = "A nova senha deve ter no mínimo 6 caracteres")] string NovaSenha);
 
     public record UsuarioListaDto(string Id, string Email, string Nome, string Role, DateTime DataCriacao);
     public record ListaUsuariosDto(int Total, IReadOnlyList<UsuarioListaDto> Usuarios);
@@ -51,37 +67,47 @@ namespace Sincro.Application.DTOs
     public record ResponsavelDto(string Id, string Nome, string Role);
 
     // ---------- Clientes ----------
+    // Documento = CNPJ (o mesmo nome da entidade e do front)
     public record CriarClienteDto(
         [Required(ErrorMessage = "Nome é obrigatório")] string Nome,
+        [Required(ErrorMessage = "CNPJ é obrigatório")] string Documento,
         [EmailAddress(ErrorMessage = "Email inválido")] string? Email,
         [Phone(ErrorMessage = "Telefone inválido")] string? Telefone,
-        [Required(ErrorMessage = "Endereço é obrigatório")] string Endereco,
-        [Required(ErrorMessage = "CNPJ é obrigatório")] string CNPJ);
+        string? Endereco);
 
     public record AtualizarClienteDto(
         [Required(ErrorMessage = "Nome é obrigatório")] string Nome,
+        [Required(ErrorMessage = "CNPJ é obrigatório")] string Documento,
         [EmailAddress(ErrorMessage = "Email inválido")] string? Email,
         [Phone(ErrorMessage = "Telefone inválido")] string? Telefone,
-        [Required(ErrorMessage = "Endereço é obrigatório")] string Endereco);
+        string? Endereco);
 
-    public record ClienteListaDto(int Id, string Nome, string Email, string Telefone, DateTime DataCriacao);
-    public record ClienteDetailDto(int Id, string Nome, string Email, string Telefone, string Endereco, string Cnpj, bool Ativo, DateTime DataCriacao);
-    public record ListaClientesDto(int Total, int Pagina, int Tamanho, IReadOnlyList<ClienteListaDto> Clientes);
+    // TokenAcompanhamento vem null para o Vendedor (o link do portal é de Administrador/Gestor)
+    public record ClienteDto(
+        int Id,
+        string Codigo,
+        string Nome,
+        string? Documento,
+        string? Telefone,
+        string? Email,
+        string? Endereco,
+        string? TokenAcompanhamento);
+
+    public record ListaClientesDto(int Total, int Pagina, int Tamanho, IReadOnlyList<ClienteDto> Clientes);
 
     // ---------- Produtos ----------
     public record CriarProdutoDto(
         [Required(ErrorMessage = "Nome é obrigatório")] string Nome,
-        [Required(ErrorMessage = "Descrição é obrigatória")] string Descricao,
-        [Range(0.01, double.MaxValue, ErrorMessage = "Preço deve ser maior que 0")] decimal Preco,
+        string? Descricao,
+        [Range(0.01, 99999999.99, ErrorMessage = "Preço deve ser maior que 0")] decimal Preco,
         [Range(0, int.MaxValue, ErrorMessage = "Estoque não pode ser negativo")] int Estoque);
 
     public record AtualizarProdutoDto(
         [Required(ErrorMessage = "Nome é obrigatório")] string Nome,
-        [Required(ErrorMessage = "Descrição é obrigatória")] string Descricao,
-        [Range(0.01, double.MaxValue, ErrorMessage = "Preço deve ser maior que 0")] decimal Preco,
+        string? Descricao,
+        [Range(0.01, 99999999.99, ErrorMessage = "Preço deve ser maior que 0")] decimal Preco,
         [Range(0, int.MaxValue, ErrorMessage = "Estoque não pode ser negativo")] int Estoque);
 
-    public record ProdutoListaDto(int Id, string Nome, decimal Preco, int Estoque, bool Ativo);
-    public record ProdutoDetailDto(int Id, string Nome, string Descricao, decimal Preco, int Estoque, bool Ativo, DateTime DataCriacao);
-    public record ListaProdutosDto(int Total, int Pagina, int Tamanho, IReadOnlyList<ProdutoListaDto> Produtos);
+    public record ProdutoDto(int Id, string Codigo, string Nome, string? Descricao, decimal Preco, int Estoque);
+    public record ListaProdutosDto(int Total, int Pagina, int Tamanho, IReadOnlyList<ProdutoDto> Produtos);
 }
