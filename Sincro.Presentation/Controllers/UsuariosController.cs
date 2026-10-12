@@ -47,14 +47,11 @@ namespace Sincro.Presentation.Controllers
             return CreatedAtAction(nameof(ObterUsuario), new { id = criado.Id }, criado);
         }
 
-        /// <summary>Atualizar usuário (apenas Admin)</summary>
+        /// <summary>Atualizar nome, email, perfil e (opcional) senha de um usuário (apenas Admin)</summary>
         [HttpPut("{id}")]
         [Authorize(Roles = Roles.Administrador)]
         public async Task<IActionResult> AtualizarUsuario(string id, [FromBody] AtualizarUsuarioDto dto)
-        {
-            await _usuarioService.AtualizarAsync(id, dto);
-            return Ok(new MensagemDto("Usuário atualizado com sucesso"));
-        }
+            => Ok(await _usuarioService.AtualizarAsync(id, dto));
 
         /// <summary>Deletar usuário (apenas Admin)</summary>
         [HttpDelete("{id}")]
@@ -73,10 +70,7 @@ namespace Sincro.Presentation.Controllers
         /// <summary>Atualizar dados do próprio perfil</summary>
         [HttpPut("me")]
         public async Task<IActionResult> AtualizarMeuPerfil([FromBody] AtualizarMeuPerfilDto dto)
-        {
-            await _usuarioService.AtualizarPerfilAsync(UsuarioLogadoId, dto);
-            return Ok(new MensagemDto("Perfil atualizado com sucesso"));
-        }
+            => Ok(await _usuarioService.AtualizarPerfilAsync(UsuarioLogadoId, dto));
 
         /// <summary>Alterar senha do usuário logado</summary>
         [HttpPut("me/senha")]

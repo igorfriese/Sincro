@@ -41,10 +41,7 @@ namespace Sincro.Presentation.Controllers
         [HttpPut("{id:int}")]
         [Authorize(Roles = Roles.AdministradorOuGestor)]
         public async Task<IActionResult> AtualizarProduto(int id, [FromBody] AtualizarProdutoDto dto)
-        {
-            await _produtoService.AtualizarAsync(id, dto);
-            return Ok(new MensagemDto("Produto atualizado com sucesso"));
-        }
+            => Ok(await _produtoService.AtualizarAsync(id, dto));
 
         /// <summary>Deletar produto (apenas Admin)</summary>
         [HttpDelete("{id:int}")]
