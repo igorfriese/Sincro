@@ -59,7 +59,7 @@ namespace Sincro.Application.Services
             if (dataInicio.HasValue && dataFim.HasValue && dataFim.Value.Date < dataInicio.Value.Date)
                 throw new RegraDeNegocioException("dataFim não pode ser anterior a dataInicio");
 
-            var etapas = (await _etapaRepository.ListarTodosAsync()).OrderBy(e => e.Ordem).ToList();
+            var etapas = (await _etapaRepository.ListarTodosAsync()).OrderBy(e => e.Ordem).ThenBy(e => e.Id).ToList();
             if (etapas.Count == 0)
                 return new List<PedidoProduzidoDto>();
 

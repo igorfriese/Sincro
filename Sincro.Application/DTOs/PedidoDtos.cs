@@ -26,7 +26,8 @@ namespace Sincro.Application.DTOs
         string? Observacao);
 
     // ---------- Pedidos: saída (mesmo formato que o front já lê) ----------
-    public record ClienteResumoDto(int Id, string Nome, string TokenAcompanhamento);
+    // TokenAcompanhamento vem null para o Vendedor
+    public record ClienteResumoDto(int Id, string Nome, string? TokenAcompanhamento);
     public record ProdutoResumoDto(int Id, string Nome);
 
     public record PedidoDto(
