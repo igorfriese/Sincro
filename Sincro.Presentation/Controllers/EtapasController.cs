@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Sincro.Domain.Entities;
-using Sincro.Domain.Interfaces;
+using Sincro.Application.DTOs;
+using Sincro.Application.Interfaces;
+using Sincro.Domain;
 
 namespace Sincro.Presentation.Controllers
 {
@@ -10,89 +11,54 @@ namespace Sincro.Presentation.Controllers
     [Authorize]
     public class EtapasController : ControllerBase
     {
-        private readonly IEtapaRepository _repository;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IEtapaService _etapaService;
 
-        public EtapasController(
-            IEtapaRepository repository,
-            IUnitOfWork unitOfWork)
+        public EtapasController(IEtapaService etapaService)
         {
-            _repository = repository;
-            _unitOfWork = unitOfWork;
+            _etapaService = etapaService;
         }
 
+        // Ler as colunas: qualquer usuário logado (o Kanban precisa delas)
         [HttpGet]
-        public async Task<ActionResult<List<Etapa>>> ListarTodos()
-        {
-            var etapas = await _repository.ListarTodosAsync();
+        public async Task<ActionResult<List<EtapaDto>>> ListarTodos()
+            => Ok(await _etapaService.ListarAsync());
 
-            return Ok(etapas);
-        }
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<EtapaDto>> ObterPorId(int id)
+            => Ok(await _etapaService.ObterAsync(id));
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Etapa>> ObterPorId(int id)
-        {
-            var etapa = await _repository.ObterPorIdAsync(id);
-
-            if (etapa == null)
-                return NotFound(new { mensagem = "Etapa não encontrada." });
-
-            return Ok(etapa);
-        }
-
+        // Configurar as colunas: só Administrador
         [HttpPost]
-        [Authorize(Roles = "Administrador,Gestor")]
-        public async Task<ActionResult<Etapa>> Criar(Etapa etapa)
+        [Authorize(Roles = Roles.Administrador)]
+        public async Task<ActionResult<EtapaDto>> Criar(CriarEtapaDto dto)
         {
-            await _repository.AdicionarAsync(etapa);
-            await _unitOfWork.SalvarAsync();
-
-            return CreatedAtAction(
-                nameof(ObterPorId),
-                new { id = etapa.Id },
-                etapa
-            );
+            var criada = await _etapaService.CriarAsync(dto);
+            return CreatedAtAction(nameof(ObterPorId), new { id = criada.Id }, criada);
         }
 
-
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Administrador,Gestor")]
-        public async Task<ActionResult> Atualizar(int id, Etapa etapa)
+        [HttpPut("{id:int}")]
+        [Authorize(Roles = Roles.Administrador)]
+        public async Task<ActionResult> Atualizar(int id, AtualizarEtapaDto dto)
         {
-            if (id != etapa.Id)
-                return BadRequest(new { mensagem = "O ID da URL não corresponde ao ID da etapa." });
-
-            var etapaExistente = await _repository.ObterPorIdAsync(id);
-
-            if (etapaExistente == null)
-                return NotFound(new { mensagem = "Etapa não encontrada." });
-
-            etapaExistente.Chave = etapa.Chave;
-            etapaExistente.Nome = etapa.Nome;
-            etapaExistente.Cor = etapa.Cor;
-            etapaExistente.Ordem = etapa.Ordem;
-
-            _repository.Atualizar(etapaExistente);
-            await _unitOfWork.SalvarAsync();
-
+            await _etapaService.AtualizarAsync(id, dto);
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Administrador")]
+        // Nova ordem de todas as colunas de uma vez
+        [HttpPut("reordenar")]
+        [Authorize(Roles = Roles.Administrador)]
+        public async Task<ActionResult> Reordenar(ReordenarEtapasDto dto)
+        {
+            await _etapaService.ReordenarAsync(dto);
+            return NoContent();
+        }
+
+        [HttpDelete("{id:int}")]
+        [Authorize(Roles = Roles.Administrador)]
         public async Task<ActionResult> Remover(int id)
         {
-            var etapa = await _repository.ObterPorIdAsync(id);
-
-            if (etapa == null)
-            {
-                return NotFound(new { mensagem = "Etapa não encontrada." });
-            }
-
-                _repository.Remover(etapa);
-                await _unitOfWork.SalvarAsync();
-
-                return NoContent();
+            await _etapaService.RemoverAsync(id);
+            return NoContent();
         }
     }
 }

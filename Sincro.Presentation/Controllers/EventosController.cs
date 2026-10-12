@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Sincro.Domain.Entities;
-using Sincro.Infrastructure.Data;
+using Sincro.Application.DTOs;
+using Sincro.Application.Interfaces;
+using Sincro.Presentation.Extensions;
 
 namespace Sincro.Presentation.Controllers
 {
@@ -11,113 +11,33 @@ namespace Sincro.Presentation.Controllers
     [Authorize]
     public class EventosController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IEventoService _eventoService;
 
-        public EventosController (ApplicationDbContext context)
+        public EventosController(IEventoService eventoService)
         {
-            _context = context;
+            _eventoService = eventoService;
         }
 
-        [HttpGet("pedido/{pedidoId}")]
-        public async Task<ActionResult<List<EventoPedido>>> ListarPorPedido(int pedidoId)
-        {
-            var pedidoExiste = await _context.Pedidos
-                .AnyAsync(p => p.Id == pedidoId);
+        [HttpGet("pedido/{pedidoId:int}")]
+        public async Task<ActionResult<List<EventoDto>>> ListarPorPedido(int pedidoId)
+            => Ok(await _eventoService.ListarPorPedidoAsync(pedidoId, User.ParaUsuarioAtual()));
 
-            if (!pedidoExiste)
-            {
-                return NotFound(new { mensagem = "Pedido não encontrado." });
-            }
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<EventoDto>> ObterPorId(int id)
+            => Ok(await _eventoService.ObterAsync(id, User.ParaUsuarioAtual()));
 
-            var eventos = await _context.EventoPedidos
-                .Where(e => e.PedidoId == pedidoId)
-                .OrderBy(e => e.DataHora)
-                .ToListAsync();
-
-            return Ok(eventos);
-        }
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<EventoPedido>> ObterPorId(int id)
-        {
-            var evento = await _context.EventoPedidos
-                .FirstOrDefaultAsync(e => e.Id == id);
-            
-            if (evento == null)
-            {
-                return NotFound(new { mensagem = "Evento não encontrado." });
-            }
-
-            return Ok(evento);
-        }
-
-        // =========================================================
-        // 1. EVENTOS PÚBLICOS DO CLIENTE
-        // =========================================================
-
-        [HttpGet("publico/cliente/{token}/pedido/{pedidoId}")]
-        [AllowAnonymous]
-        public async Task<ActionResult> ListarEventosPublicos(string token, int pedidoId)
-        {
-            var cliente = await _context.Clientes
-                .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.TokenAcompanhamento == token);
-        
-            if (cliente == null)
-            {
-                return NotFound(new { mensagem = "Link inválido ou cliente não encontrado." });
-            }
-
-            var pedidoPertenceAoCliente = await _context.Pedidos
-                .AsNoTracking()
-                .AnyAsync(p => p.Id == pedidoId && p.ClienteId == cliente.Id);
-
-            if (!pedidoPertenceAoCliente)
-            {
-                return NotFound(new { mensagem = "Pedido não encontrado para este cliente." });
-            }
-
-            var eventos = await _context.EventoPedidos
-                .AsNoTracking()
-                .Where(e => e.PedidoId == pedidoId)
-                .OrderBy(e => e.DataHora)
-                .Select(e => new
-                {
-                    id = e.Id,
-                    etapa = e.Etapa,
-                    dataHora = e.DataHora,
-                    observacao = e.Observacao,
-                })
-                .ToListAsync();
-
-            return Ok(eventos);
-        }
-
+        // Anotação na timeline (mudança de etapa é pelo PUT /api/pedidos/{id}/etapa)
         [HttpPost]
-        [Authorize(Roles = "Administrador,Gestor,Vendedor")]
-        public async Task<ActionResult<EventoPedido>> Criar(EventoPedido evento)
+        public async Task<ActionResult<EventoDto>> Criar(CriarAnotacaoDto dto)
         {
-            var pedidoExite = await _context.Pedidos
-                .AnyAsync(p => p.Id == evento.PedidoId);
-
-            if (!pedidoExite)
-            {
-                return NotFound(new { mensagem = "Pedido não encontrado." });
-            }
-
-            evento.Id = 0;
-            evento.DataHora = evento.DataHora == default
-                ? DateTime.Now : evento.DataHora;
-
-            evento.RegistradoPorId = User.FindFirst("sub")?.Value;
-
-            await _context.EventoPedidos.AddAsync(evento);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(
-                nameof(ObterPorId),
-                new { id = evento.Id },
-                evento);
+            var criado = await _eventoService.CriarAnotacaoAsync(dto, User.ParaUsuarioAtual());
+            return CreatedAtAction(nameof(ObterPorId), new { id = criado.Id }, criado);
         }
+
+        // Portal do cliente: rota pública, a segurança é a posse do token
+        [HttpGet("publico/cliente/{token}/pedido/{pedidoId:int}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<EventoPublicoDto>>> ListarEventosPublicos(string token, int pedidoId)
+            => Ok(await _eventoService.ListarPublicoAsync(token, pedidoId));
     }
 }
