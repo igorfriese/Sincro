@@ -207,8 +207,9 @@ namespace Sincro.Application.Services
 
         private static void ValidarQuantidadeEPrazo(int quantidade, DateTime prazo)
         {
-            if (quantidade <= 0)
-                throw new RegraDeNegocioException("Quantidade deve ser maior que 0");
+            // Teto evita estourar a soma de peças (int) nos relatórios
+            if (quantidade <= 0 || quantidade > 100_000)
+                throw new RegraDeNegocioException("Quantidade deve ser entre 1 e 100.000");
 
             if (prazo == default)
                 throw new RegraDeNegocioException("Prazo é obrigatório");

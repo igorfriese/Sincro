@@ -49,7 +49,7 @@ namespace Sincro.Application.Services
                 Codigo = CodigoSequencial.Proximo("PRD", existentes.Select(p => p.Codigo)),
                 Nome = dto.Nome.Trim(),
                 Descricao = string.IsNullOrWhiteSpace(dto.Descricao) ? null : dto.Descricao.Trim(),
-                PrecoBase = dto.Preco,
+                PrecoBase = Math.Round(dto.Preco, 2, MidpointRounding.AwayFromZero), // o banco guarda 2 casas: a resposta mostra o mesmo valor
                 Estoque = dto.Estoque
             };
 
@@ -69,7 +69,7 @@ namespace Sincro.Application.Services
 
             produto.Nome = dto.Nome.Trim();
             produto.Descricao = string.IsNullOrWhiteSpace(dto.Descricao) ? null : dto.Descricao.Trim();
-            produto.PrecoBase = dto.Preco;
+            produto.PrecoBase = Math.Round(dto.Preco, 2, MidpointRounding.AwayFromZero);
             produto.Estoque = dto.Estoque;
 
             await _unitOfWork.SalvarAsync();
