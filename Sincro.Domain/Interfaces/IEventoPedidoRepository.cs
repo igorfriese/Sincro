@@ -12,6 +12,7 @@ namespace Sincro.Domain.Interfaces
         Task<EventoPedido?> ObterPorIdAsync(int id);
         Task<List<EventoPedido>> ListarPorPedidoIdAsync(int pedidoId);
         Task<List<EventoPedido>> ListarPorEtapaAsync(string chaveEtapa);
+        Task<Dictionary<int, DateTime>> UltimaMovimentacaoPorPedidoAsync(IEnumerable<int> pedidoIds);
         Task AdicionarAsync(EventoPedido evento);
     }
 }

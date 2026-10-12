@@ -42,6 +42,18 @@ namespace Sincro.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        // Data do evento mais recente de cada pedido, numa consulta só (para "sem movimentação")
+        public async Task<Dictionary<int, DateTime>> UltimaMovimentacaoPorPedidoAsync(IEnumerable<int> pedidoIds)
+        {
+            var ids = pedidoIds.ToList();
+
+            return await _context.EventoPedidos
+                .Where(e => ids.Contains(e.PedidoId))
+                .GroupBy(e => e.PedidoId)
+                .Select(g => new { PedidoId = g.Key, Ultima = g.Max(e => e.DataHora) })
+                .ToDictionaryAsync(x => x.PedidoId, x => x.Ultima);
+        }
+
         public async Task AdicionarAsync(EventoPedido evento)
         {
             await _context.EventoPedidos.AddAsync(evento);

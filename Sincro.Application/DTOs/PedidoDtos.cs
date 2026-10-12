@@ -39,7 +39,8 @@ namespace Sincro.Application.DTOs
         int Quantidade,
         DateTime Prazo,
         bool Urgente,
-        string Coluna);
+        string Coluna,
+        DateTime? UltimaMovimentacao); // evento mais recente (alerta de "sem movimentação")
 
     // ---------- Portal público do cliente ----------
     public record ClientePortalDto(int Id, string Nome);
