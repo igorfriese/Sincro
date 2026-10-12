@@ -15,5 +15,7 @@ namespace Sincro.Domain.Interfaces
         void Atualizar(Pedido pedido);
         void Remover(Pedido pedido);
         Task SalvarAsync();
+        Task<List<Pedido>> ListarPorResponsavelAsync(string responsavelId);
+        Task<List<Pedido>> ListarPorClienteIdAsync(int clienteId);
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Sincro.Application.Services;
@@ -9,6 +10,7 @@ using Sincro.Infrastructure.Data;
 using Sincro.Infrastructure.Repositories;
 using System.Text.Json.Serialization;
 using System.Text;
+using Sincro.Application.DTOs;
 using Sincro.Application.Interfaces;
 using Sincro.Presentation.Middleware;
 
@@ -118,6 +120,7 @@ builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<IRelatorioService, RelatorioService>();
+builder.Services.AddScoped<IPedidoService, PedidoService>();
 
 // ---------- Controllers + Swagger ----------
 builder.Services
@@ -125,6 +128,19 @@ builder.Services
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // Erros de validação dos DTOs também no padrão { "erro": "mensagem" }
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var mensagem = context.ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => string.IsNullOrWhiteSpace(e.ErrorMessage) ? "Dados inválidos" : e.ErrorMessage)
+                .FirstOrDefault() ?? "Dados inválidos";
+
+            return new BadRequestObjectResult(new ErroDto(mensagem));
+        };
     });
 
 builder.Services.AddEndpointsApiExplorer();
