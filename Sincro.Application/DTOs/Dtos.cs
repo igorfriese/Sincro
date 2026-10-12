@@ -47,6 +47,9 @@ namespace Sincro.Application.DTOs
     public record ListaUsuariosDto(int Total, IReadOnlyList<UsuarioListaDto> Usuarios);
     public record PerfilDto(string Id, string? Email, string Nome, string? Role);
 
+    // Lista enxuta para escolher o responsável de um pedido (Administrador e Gestor)
+    public record ResponsavelDto(string Id, string Nome, string Role);
+
     // ---------- Clientes ----------
     public record CriarClienteDto(
         [Required(ErrorMessage = "Nome é obrigatório")] string Nome,

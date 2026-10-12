@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sincro.Application.DTOs;
-using Sincro.Application.Exceptions;
 using Sincro.Application.Interfaces;
 using Sincro.Domain;
-using System.Security.Claims;
+using Sincro.Presentation.Extensions;
 
 namespace Sincro.Presentation.Controllers
 {
@@ -20,21 +19,7 @@ namespace Sincro.Presentation.Controllers
             _pedidoService = pedidoService;
         }
 
-        // O .NET troca o claim "sub" do JWT por ClaimTypes.NameIdentifier ao ler o token
-        private UsuarioAtual UsuarioAtual
-        {
-            get
-            {
-                var id = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? throw new NaoAutorizadoException();
-
-                var somenteProprios = User.IsInRole(Roles.Vendedor)
-                    && !User.IsInRole(Roles.Administrador)
-                    && !User.IsInRole(Roles.Gestor);
-
-                return new UsuarioAtual(id, somenteProprios);
-            }
-        }
+        private UsuarioAtual UsuarioAtual => User.ParaUsuarioAtual();
 
         [HttpGet]
         public async Task<ActionResult<List<PedidoDto>>> ListarTodos()

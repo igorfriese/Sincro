@@ -71,5 +71,10 @@ namespace Sincro.Infrastructure.Repositories
                 .Where(p => p.ClienteId == clienteId)
                 .ToListAsync();
         }
+
+        public async Task<int> ContarPorColunaAsync(string chaveEtapa)
+        {
+            return await _context.Pedidos.CountAsync(p => p.Coluna == chaveEtapa);
+        }
     }
 }

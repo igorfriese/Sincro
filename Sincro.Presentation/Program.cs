@@ -121,6 +121,8 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<IRelatorioService, RelatorioService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
+builder.Services.AddScoped<IEtapaService, EtapaService>();
+builder.Services.AddScoped<IEventoService, EventoService>();
 
 // ---------- Controllers + Swagger ----------
 builder.Services
