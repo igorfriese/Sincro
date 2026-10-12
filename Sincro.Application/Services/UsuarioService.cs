@@ -144,6 +144,10 @@ namespace Sincro.Application.Services
             // Senha definida pelo Administrador (não exige a senha antiga)
             if (!string.IsNullOrWhiteSpace(dto.NovaSenha))
             {
+                // Senha trocada pelo Administrador: a sessão aberta com a senha antiga não renova mais
+                usuario.RefreshToken = null;
+                usuario.RefreshTokenExpiraEm = null;
+
                 var token = await _userManager.GeneratePasswordResetTokenAsync(usuario);
                 var resultadoSenha = await _userManager.ResetPasswordAsync(usuario, token, dto.NovaSenha);
                 if (!resultadoSenha.Succeeded)

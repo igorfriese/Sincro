@@ -9,6 +9,7 @@ using Sincro.Domain.Interfaces;
 using Sincro.Infrastructure.Data;
 using Sincro.Infrastructure.Identity;
 using Sincro.Infrastructure.Repositories;
+using System.Security.Claims;
 using System.Text.Json.Serialization;
 using System.Text;
 using Sincro.Application.DTOs;
@@ -87,6 +88,28 @@ builder.Services
                     context.Token = accessToken;
 
                 return Task.CompletedTask;
+            },
+
+            // O JWT vale 1h mesmo se o usuário for excluído ou mudar de perfil nesse meio-tempo.
+            // Confere no banco: usuário que não existe mais ou perfil diferente do token = 401.
+            // O front renova o token sozinho (já com o perfil novo) ou volta para o login.
+            OnTokenValidated = async context =>
+            {
+                var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+                var id = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+                var usuario = id is null ? null : await userManager.FindByIdAsync(id);
+
+                if (usuario is null)
+                {
+                    context.Fail("Usuário não existe mais");
+                    return;
+                }
+
+                var perfisNoBanco = (await userManager.GetRolesAsync(usuario)).OrderBy(r => r);
+                var perfisNoToken = context.Principal!.FindAll(ClaimTypes.Role).Select(c => c.Value).OrderBy(r => r);
+
+                if (!perfisNoBanco.SequenceEqual(perfisNoToken))
+                    context.Fail("Perfil do usuário foi alterado");
             }
         };
     });

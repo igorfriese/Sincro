@@ -7,7 +7,7 @@ namespace Sincro.Application.DTOs
         [Range(1, int.MaxValue, ErrorMessage = "Cliente é obrigatório")] int ClienteId,
         [Range(1, int.MaxValue, ErrorMessage = "Produto é obrigatório")] int ProdutoId,
         string? ResponsavelId,
-        [Range(1, int.MaxValue, ErrorMessage = "Quantidade deve ser maior que 0")] int Quantidade,
+        [Range(1, 100_000, ErrorMessage = "Quantidade deve ser entre 1 e 100.000")] int Quantidade,
         DateTime Prazo,
         bool Urgente,
         string? Coluna);
@@ -17,7 +17,7 @@ namespace Sincro.Application.DTOs
         [Range(1, int.MaxValue, ErrorMessage = "Cliente é obrigatório")] int ClienteId,
         [Range(1, int.MaxValue, ErrorMessage = "Produto é obrigatório")] int ProdutoId,
         string? ResponsavelId,
-        [Range(1, int.MaxValue, ErrorMessage = "Quantidade deve ser maior que 0")] int Quantidade,
+        [Range(1, 100_000, ErrorMessage = "Quantidade deve ser entre 1 e 100.000")] int Quantidade,
         DateTime Prazo,
         bool Urgente);
 
