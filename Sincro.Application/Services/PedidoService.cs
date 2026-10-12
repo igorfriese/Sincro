@@ -43,13 +43,13 @@ namespace Sincro.Application.Services
 
             var ultimas = await _eventoRepository.UltimaMovimentacaoPorPedidoAsync(pedidos.Select(p => p.Id));
 
-            return pedidos.OrderBy(p => p.Prazo).Select(p => ParaDto(p, ultimas)).ToList();
+            return pedidos.OrderBy(p => p.Prazo).Select(p => ParaDto(p, ultimas, usuario)).ToList();
         }
 
         public async Task<PedidoDto> ObterAsync(int id, UsuarioAtual usuario)
         {
             var pedido = await ObterComPermissaoAsync(id, usuario);
-            return await ParaDtoAsync(pedido);
+            return await ParaDtoAsync(pedido, usuario);
         }
 
         public async Task<PedidoDto> CriarAsync(CriarPedidoDto dto, UsuarioAtual usuario)
@@ -99,7 +99,7 @@ namespace Sincro.Application.Services
             await _unitOfWork.SalvarAsync();
 
             // Recarrega com cliente e produto para devolver o mesmo formato da listagem
-            return await ParaDtoAsync((await _pedidoRepository.ObterPorIdAsync(pedido.Id))!);
+            return await ParaDtoAsync((await _pedidoRepository.ObterPorIdAsync(pedido.Id))!, usuario);
         }
 
         public async Task AtualizarAsync(int id, AtualizarPedidoDto dto, UsuarioAtual usuario)
@@ -227,7 +227,7 @@ namespace Sincro.Application.Services
 
         private async Task<List<Etapa>> ListarEtapasOrdenadasAsync()
         {
-            var etapas = (await _etapaRepository.ListarTodosAsync()).OrderBy(e => e.Ordem).ToList();
+            var etapas = (await _etapaRepository.ListarTodosAsync()).OrderBy(e => e.Ordem).ThenBy(e => e.Id).ToList();
 
             if (etapas.Count == 0)
                 throw new RegraDeNegocioException("Nenhuma etapa cadastrada");
@@ -235,14 +235,16 @@ namespace Sincro.Application.Services
             return etapas;
         }
 
-        private async Task<PedidoDto> ParaDtoAsync(Pedido p)
-            => ParaDto(p, await _eventoRepository.UltimaMovimentacaoPorPedidoAsync(new[] { p.Id }));
+        private async Task<PedidoDto> ParaDtoAsync(Pedido p, UsuarioAtual usuario)
+            => ParaDto(p, await _eventoRepository.UltimaMovimentacaoPorPedidoAsync(new[] { p.Id }), usuario);
 
-        private static PedidoDto ParaDto(Pedido p, Dictionary<int, DateTime> ultimasMovimentacoes)
+        // Token do portal só para Administrador e Gestor (mesma regra da tela de clientes)
+        private static PedidoDto ParaDto(Pedido p, Dictionary<int, DateTime> ultimasMovimentacoes, UsuarioAtual usuario)
             => new(
                 p.Id,
                 p.ClienteId,
-                p.Cliente is null ? null : new ClienteResumoDto(p.Cliente.Id, p.Cliente.Nome, p.Cliente.TokenAcompanhamento),
+                p.Cliente is null ? null : new ClienteResumoDto(p.Cliente.Id, p.Cliente.Nome,
+                    usuario.SomenteProprios ? null : p.Cliente.TokenAcompanhamento),
                 p.ProdutoId,
                 p.Produto is null ? null : new ProdutoResumoDto(p.Produto.Id, p.Produto.Nome),
                 p.ResponsavelId,

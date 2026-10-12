@@ -113,6 +113,18 @@ namespace Sincro.Application.Services
             if (eraAdmin && dto.Role != Roles.Administrador && await EhUltimoAdministradorAsync())
                 throw new RegraDeNegocioException("Não é possível rebaixar o último Administrador do sistema");
 
+            // Valida a senha nova ANTES de gravar qualquer coisa: cada chamada do UserManager
+            // salva sozinha, então uma senha recusada no fim deixaria nome/perfil já alterados
+            if (!string.IsNullOrWhiteSpace(dto.NovaSenha))
+            {
+                foreach (var validador in _userManager.PasswordValidators)
+                {
+                    var validacao = await validador.ValidateAsync(_userManager, usuario, dto.NovaSenha);
+                    if (!validacao.Succeeded)
+                        throw new RegraDeNegocioException(JuntarErros(validacao));
+                }
+            }
+
             usuario.Nome = dto.Nome.Trim();
             await TrocarEmailAsync(usuario, dto.Email);
 
@@ -123,8 +135,10 @@ namespace Sincro.Application.Services
             // Troca de perfil: sai dos papéis antigos e entra no novo
             if (!(rolesAtuais.Count == 1 && rolesAtuais[0] == dto.Role))
             {
-                await _userManager.RemoveFromRolesAsync(usuario, rolesAtuais);
-                await _userManager.AddToRoleAsync(usuario, dto.Role);
+                var removeu = await _userManager.RemoveFromRolesAsync(usuario, rolesAtuais);
+                var adicionou = removeu.Succeeded ? await _userManager.AddToRoleAsync(usuario, dto.Role) : removeu;
+                if (!adicionou.Succeeded)
+                    throw new RegraDeNegocioException($"Erro ao trocar o perfil: {JuntarErros(adicionou)}");
             }
 
             // Senha definida pelo Administrador (não exige a senha antiga)
