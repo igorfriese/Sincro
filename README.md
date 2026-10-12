@@ -1,6 +1,6 @@
 # Sincro — API
 
-Backend do **Syncrow**, plataforma de visibilidade operacional para pequenas facções têxteis do Vale do Itajaí (SC). Conecta o dono da facção às confecções contratantes: Kanban de produção, timeline de cada pedido, alertas, relatórios e um portal público para o cliente acompanhar os pedidos dele.
+Backend do **Sincro**, plataforma de visibilidade operacional para pequenas facções têxteis do Vale do Itajaí (SC). Conecta o dono da facção às confecções contratantes: Kanban de produção, timeline de cada pedido, alertas, relatórios e um portal público para o cliente acompanhar os pedidos dele.
 
 O front-end fica em outro repositório: [frontend-Sincro](https://github.com/igorfriese/frontend-Sincro).
 
