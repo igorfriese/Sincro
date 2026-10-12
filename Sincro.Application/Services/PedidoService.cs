@@ -15,7 +15,6 @@ namespace Sincro.Application.Services
         private readonly IEtapaRepository _etapaRepository;
         private readonly IEventoPedidoRepository _eventoRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly EtapaService _etapaService;
         private readonly UserManager<ApplicationUser> _userManager;
 
         public PedidoService(
@@ -25,7 +24,6 @@ namespace Sincro.Application.Services
             IEtapaRepository etapaRepository,
             IEventoPedidoRepository eventoRepository,
             IUnitOfWork unitOfWork,
-            EtapaService etapaService,
             UserManager<ApplicationUser> userManager)
         {
             _pedidoRepository = pedidoRepository;
@@ -34,7 +32,6 @@ namespace Sincro.Application.Services
             _etapaRepository = etapaRepository;
             _eventoRepository = eventoRepository;
             _unitOfWork = unitOfWork;
-            _etapaService = etapaService;
             _userManager = userManager;
         }
 
@@ -128,7 +125,7 @@ namespace Sincro.Application.Services
             var pedido = await ObterComPermissaoAsync(id, usuario);
             var etapas = await ListarEtapasOrdenadasAsync();
 
-            var (permitido, motivo) = _etapaService.ValidarTransicao(etapas, pedido.Coluna, dto.Etapa);
+            var (permitido, motivo) = EtapaService.ValidarTransicao(etapas, pedido.Coluna, dto.Etapa);
             if (!permitido)
                 throw new RegraDeNegocioException(motivo ?? "Movimento não permitido");
 

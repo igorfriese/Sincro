@@ -43,9 +43,5 @@ namespace Sincro.Infrastructure.Repositories
         {
             _context.Produtos.Remove(produto);
         }
-        public async Task SalvarAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
     }
 }

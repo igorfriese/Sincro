@@ -10,10 +10,12 @@ namespace Sincro.Application.Services
     public class ClienteService : IClienteService
     {
         private readonly IClienteRepository _repository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ClienteService(IClienteRepository repository)
+        public ClienteService(IClienteRepository repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ListaClientesDto> ListarAsync(int pagina, int tamanho, bool incluirToken)
@@ -55,7 +57,7 @@ namespace Sincro.Application.Services
             };
 
             await _repository.AdicionarAsync(cliente);
-            await _repository.SalvarAsync();
+            await _unitOfWork.SalvarAsync();
 
             return ParaDto(cliente, incluirToken: true);
         }
@@ -75,7 +77,7 @@ namespace Sincro.Application.Services
             cliente.Telefone = Limpar(dto.Telefone);
             cliente.Endereco = Limpar(dto.Endereco);
 
-            await _repository.SalvarAsync();
+            await _unitOfWork.SalvarAsync();
 
             return ParaDto(cliente, incluirToken: true);
         }
@@ -87,7 +89,7 @@ namespace Sincro.Application.Services
             try
             {
                 _repository.Remover(cliente);
-                await _repository.SalvarAsync();
+                await _unitOfWork.SalvarAsync();
             }
             catch (DbUpdateException)
             {

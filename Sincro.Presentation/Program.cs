@@ -112,8 +112,7 @@ builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<IEtapaRepository, EtapaRepository>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IEventoPedidoRepository, EventoPedidoRepository>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<EtapaService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); // único ponto que salva no banco
 
 // ---------- Serviços da Application ----------
 builder.Services.AddScoped<TokenService>();

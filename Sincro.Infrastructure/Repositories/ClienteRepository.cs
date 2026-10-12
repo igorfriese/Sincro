@@ -51,10 +51,5 @@ namespace Sincro.Infrastructure.Repositories
         {
             _context.Clientes.Remove(cliente);
         }
-
-        public async Task SalvarAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
     }
 }

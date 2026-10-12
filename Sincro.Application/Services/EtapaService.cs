@@ -23,7 +23,9 @@ namespace Sincro.Application.Services
             _unitOfWork = unitOfWork;
         }
 
-        public (bool Permitido, string? Motivo) ValidarTransicao(
+        // Regra do Kanban: mover é livre, só a etapa final (maior Ordem) é terminal.
+        // Estática: só depende das etapas recebidas (o PedidoService usa sem precisar injetar nada).
+        public static (bool Permitido, string? Motivo) ValidarTransicao(
             List<Etapa> etapas,
             string chaveAtual,
             string chaveDestino)

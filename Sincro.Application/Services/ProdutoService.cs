@@ -10,10 +10,12 @@ namespace Sincro.Application.Services
     public class ProdutoService : IProdutoService
     {
         private readonly IProdutoRepository _repository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ProdutoService(IProdutoRepository repository)
+        public ProdutoService(IProdutoRepository repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ListaProdutosDto> ListarAsync(int pagina, int tamanho)
@@ -52,7 +54,7 @@ namespace Sincro.Application.Services
             };
 
             await _repository.AdicionarAsync(produto);
-            await _repository.SalvarAsync();
+            await _unitOfWork.SalvarAsync();
 
             return ParaDto(produto);
         }
@@ -70,7 +72,7 @@ namespace Sincro.Application.Services
             produto.PrecoBase = dto.Preco;
             produto.Estoque = dto.Estoque;
 
-            await _repository.SalvarAsync();
+            await _unitOfWork.SalvarAsync();
 
             return ParaDto(produto);
         }
@@ -82,7 +84,7 @@ namespace Sincro.Application.Services
             try
             {
                 _repository.Remover(produto);
-                await _repository.SalvarAsync();
+                await _unitOfWork.SalvarAsync();
             }
             catch (DbUpdateException)
             {
